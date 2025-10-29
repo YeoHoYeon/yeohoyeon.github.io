@@ -605,6 +605,9 @@
                                     <span id="percentileBarText"></span>
                                 </div>
                             </div>
+                            <p style="font-size: 0.85em; margin-top: 15px; opacity: 0.8;">
+                                * 2024년 통계청 기준 근로자 임금 분포 데이터
+                            </p>
                         </div>
                     </div>
 
@@ -979,18 +982,22 @@
             return Math.max(0, tax);
         }
 
-        // 연봉 백분위 계산
+        // 연봉 백분위 계산 (2024년 통계청 기준)
         function calculatePercentile(annualSalary) {
             const salaryRanges = [
-                { max: 24000000, percentile: 25, desc: "하위 25% - 분발이 필요해요" },
-                { max: 30000000, percentile: 40, desc: "하위 40% - 평균 이하입니다" },
-                { max: 37000000, percentile: 50, desc: "중위 50% - 평균 수준입니다" },
-                { max: 45000000, percentile: 60, desc: "상위 40% - 평균 이상입니다!" },
-                { max: 55000000, percentile: 70, desc: "상위 30% - 꽤 좋은 수준입니다!" },
-                { max: 70000000, percentile: 80, desc: "상위 20% - 상당히 높은 연봉입니다!" },
-                { max: 90000000, percentile: 90, desc: "상위 10% - 매우 높은 연봉입니다!" },
+                { max: 28000000, percentile: 25, desc: "하위 25% - 분발이 필요해요" },
+                { max: 32000000, percentile: 35, desc: "하위 35% - 평균 이하입니다" },
+                { max: 36000000, percentile: 50, desc: "중위 50% - 평균 수준입니다" },
+                { max: 42000000, percentile: 60, desc: "상위 40% - 평균 이상입니다" },
+                { max: 50000000, percentile: 70, desc: "상위 30% - 괜찮은 수준입니다!" },
+                { max: 60000000, percentile: 80, desc: "상위 20% - 상당히 높은 연봉입니다!" },
+                { max: 75000000, percentile: 87, desc: "상위 13% - 높은 연봉입니다!" },
+                { max: 85000000, percentile: 90, desc: "상위 10% - 매우 높은 연봉입니다!" },
+                { max: 100000000, percentile: 93, desc: "상위 7% - 고소득층입니다!" },
                 { max: 120000000, percentile: 95, desc: "상위 5% - 엘리트 구간입니다!" },
-                { max: Infinity, percentile: 99, desc: "상위 1% - 최상위권입니다! 축하합니다!" }
+                { max: 150000000, percentile: 97, desc: "상위 3% - 최상위권입니다!" },
+                { max: 200000000, percentile: 99, desc: "상위 1% - 초고소득층입니다!" },
+                { max: Infinity, percentile: 99.5, desc: "상위 0.5% - 최상위 엘리트입니다! 축하합니다!" }
             ];
 
             for (let range of salaryRanges) {
