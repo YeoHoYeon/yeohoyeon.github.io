@@ -495,15 +495,19 @@
                         <div class="result-box">
                             <h3>⏱️ 시급 환산</h3>
                             <div class="result-item">
-                                <span class="label">기본 시급 (월 209시간 기준)</span>
+                                <span class="label">기본 시급 (세전, 209시간 기준)</span>
                                 <span class="value" id="hourlyWage">-</span>
+                            </div>
+                            <div class="result-item" style="background: #e8f5e9; padding: 12px; margin: 5px 0; border-radius: 8px; border-left: 4px solid #4caf50;">
+                                <span class="label" style="color: #2e7d32; font-weight: bold;">💰 실수령 기준 시급 (8시간 정시근무)</span>
+                                <span class="value" id="takeHomeHourly" style="color: #2e7d32; font-size: 1.3em;">-</span>
                             </div>
                             <div class="result-item">
                                 <span class="label">실제 근무시간 (야근 포함)</span>
                                 <span class="value" id="actualHours">-</span>
                             </div>
                             <div class="result-item">
-                                <span class="label">실제 시급</span>
+                                <span class="label">실제 시급 (야근 포함, 실수령 기준)</span>
                                 <span class="value" id="actualHourlyWage">-</span>
                             </div>
                         </div>
@@ -1059,6 +1063,9 @@
 
             // 시급 계산
             const baseHourlyWage = monthlyBase / 209;
+            const standardWorkDays = 20; // 월 20일 (주 5일 × 4주)
+            const standardWorkHours = standardWorkDays * 8; // 160시간
+            const takeHomeHourlyWage = monthlyTakeHome / standardWorkHours; // 실수령 기준 시급
             const actualWorkHours = 209 + overtimeHours;
             const actualHourlyWage = monthlyTakeHome / actualWorkHours;
 
@@ -1074,6 +1081,7 @@
             document.getElementById('totalMonthlyIncome').textContent = formatNumber(totalMonthlyIncome) + '원';
 
             document.getElementById('hourlyWage').textContent = formatNumber(baseHourlyWage) + '원';
+            document.getElementById('takeHomeHourly').textContent = formatNumber(takeHomeHourlyWage) + '원';
             document.getElementById('actualHours').textContent = formatNumber(actualWorkHours) + '시간';
             document.getElementById('actualHourlyWage').textContent = formatNumber(actualHourlyWage) + '원';
 
