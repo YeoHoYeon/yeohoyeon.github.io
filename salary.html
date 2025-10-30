@@ -550,19 +550,17 @@
                     <div class="input-group">
                         <label for="annualSalary">
                             연봉 (원)
-                            <span class="info-tooltip" title="세전 연봉을 입력하세요">?</span>
+                            <span class="info-tooltip" title="세전 연봉 (기본급 × 12개월)">?</span>
                         </label>
-                        <input type="number" id="annualSalary" placeholder="예: 50000000" value="50000000">
+                        <input type="number" id="annualSalary" placeholder="예: 36000000" value="36000000">
                     </div>
 
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="includeBonus" checked>
-                        <label for="includeBonus">상여금 포함</label>
-                    </div>
-
-                    <div class="input-group" id="bonusGroup">
-                        <label for="bonusPercent">상여금 (%)</label>
-                        <input type="number" id="bonusPercent" placeholder="예: 400" value="400">
+                    <div class="input-group">
+                        <label for="bonusAmount">
+                            연간 상여금 (원)
+                            <span class="info-tooltip" title="연간 받는 상여금 총액">?</span>
+                        </label>
+                        <input type="number" id="bonusAmount" placeholder="예: 14400000 (400%인 경우)" value="0">
                     </div>
 
                     <h3>💼 각종 수당</h3>
@@ -1129,10 +1127,6 @@
         }
 
         // 체크박스 이벤트
-        document.getElementById('includeBonus').addEventListener('change', function() {
-            document.getElementById('bonusGroup').style.display = this.checked ? 'block' : 'none';
-        });
-
         document.getElementById('includeDependents').addEventListener('change', function() {
             document.getElementById('dependentsGroup').style.display = this.checked ? 'block' : 'none';
         });
@@ -1188,22 +1182,21 @@
             return Math.max(0, tax);
         }
 
-        // 연봉 백분위 계산 (2024년 통계청 기준)
+        // 연봉 백분위 계산 (2024년 근로소득 기준)
         function calculatePercentile(annualSalary) {
             const salaryRanges = [
-                { max: 28000000, percentile: 25, desc: "하위 25% - 분발이 필요해요" },
-                { max: 32000000, percentile: 35, desc: "하위 35% - 평균 이하입니다" },
-                { max: 36000000, percentile: 50, desc: "중위 50% - 평균 수준입니다" },
-                { max: 42000000, percentile: 60, desc: "상위 40% - 평균 이상입니다" },
-                { max: 50000000, percentile: 70, desc: "상위 30% - 괜찮은 수준입니다!" },
-                { max: 60000000, percentile: 80, desc: "상위 20% - 상당히 높은 연봉입니다!" },
-                { max: 75000000, percentile: 87, desc: "상위 13% - 높은 연봉입니다!" },
-                { max: 85000000, percentile: 90, desc: "상위 10% - 매우 높은 연봉입니다!" },
-                { max: 100000000, percentile: 93, desc: "상위 7% - 고소득층입니다!" },
-                { max: 120000000, percentile: 95, desc: "상위 5% - 엘리트 구간입니다!" },
-                { max: 150000000, percentile: 97, desc: "상위 3% - 최상위권입니다!" },
-                { max: 200000000, percentile: 99, desc: "상위 1% - 초고소득층입니다!" },
-                { max: Infinity, percentile: 99.5, desc: "상위 0.5% - 최상위 엘리트입니다! 축하합니다!" }
+                { max: 24000000, percentile: 10, desc: "하위 10%" },
+                { max: 30000000, percentile: 20, desc: "하위 20%" },
+                { max: 36000000, percentile: 30, desc: "하위 30%" },
+                { max: 40000000, percentile: 40, desc: "하위 40%" },
+                { max: 45000000, percentile: 50, desc: "중위 50% - 평균 수준" },
+                { max: 50000000, percentile: 60, desc: "상위 40%" },
+                { max: 60000000, percentile: 70, desc: "상위 30%" },
+                { max: 70000000, percentile: 80, desc: "상위 20%" },
+                { max: 85000000, percentile: 90, desc: "상위 10% - 고소득" },
+                { max: 100000000, percentile: 95, desc: "상위 5% - 고소득" },
+                { max: 150000000, percentile: 99, desc: "상위 1% - 최상위" },
+                { max: Infinity, percentile: 99.5, desc: "상위 0.5% - 최상위" }
             ];
 
             for (let range of salaryRanges) {
@@ -1222,8 +1215,7 @@
         // 기본 연봉 계산
         function calculateSalary() {
             const annualSalary = parseFloat(document.getElementById('annualSalary').value) || 0;
-            const includeBonus = document.getElementById('includeBonus').checked;
-            const bonusPercent = parseFloat(document.getElementById('bonusPercent').value) || 0;
+            const bonusAmount = parseFloat(document.getElementById('bonusAmount').value) || 0;
             const positionAllowance = parseFloat(document.getElementById('positionAllowance').value) || 0;
             const rankAllowance = parseFloat(document.getElementById('rankAllowance').value) || 0;
             const extraAllowance = parseFloat(document.getElementById('extraAllowance').value) || 0;
@@ -1238,11 +1230,9 @@
                 return;
             }
 
-            // 월 기본급 계산
-            let monthlyBase = annualSalary / 12;
-            if (includeBonus && bonusPercent > 0) {
-                monthlyBase = annualSalary / (12 + bonusPercent / 100);
-            }
+            // 월 기본급 계산 (연봉 + 상여금을 12개월로 나눔)
+            const totalAnnual = annualSalary + bonusAmount;
+            const monthlyBase = totalAnnual / 12;
 
             // 총 수당
             const totalAllowances = positionAllowance + rankAllowance + extraAllowance;
@@ -1295,7 +1285,7 @@
             const actualHourlyWage = monthlyTakeHome / actualWorkHours;
 
             // 연간 계산
-            const yearlyGross = annualSalary + (totalAllowances * 12) + (overtimePay * 12) + (cashBenefit * 12);
+            const yearlyGross = annualSalary + bonusAmount + (totalAllowances * 12) + (overtimePay * 12) + (cashBenefit * 12);
             const yearlyNet = monthlyTakeHome * 12;
 
             // 결과 표시
@@ -1326,8 +1316,8 @@
             document.getElementById('yearlyGross').textContent = formatNumber(yearlyGross) + '원';
             document.getElementById('yearlyNet').textContent = formatNumber(yearlyNet) + '원';
 
-            // 백분위 계산
-            const percentileData = calculatePercentile(annualSalary);
+            // 백분위 계산 (상여금 포함한 총 연봉)
+            const percentileData = calculatePercentile(totalAnnual);
             document.getElementById('percentileRank').textContent = `상위 ${percentileData.topPercent}%`;
             document.getElementById('percentileDesc').textContent = percentileData.desc;
 
@@ -1375,12 +1365,31 @@
             const newSalary = currentSalary * (1 + increasePercent / 100);
             const increase = newSalary - currentSalary;
 
-            // 간단한 실수령 계산 (대략적)
+            // 정확한 실수령 계산 (상여금 400% 포함 기준)
             const beforeMonthly = currentSalary / 16; // 상여금 포함 기준
             const afterMonthly = newSalary / 16;
 
-            const beforeTakeHome = beforeMonthly * 0.85; // 대략 85% 정도 실수령
-            const afterTakeHome = afterMonthly * 0.85;
+            // 인상 전 실수령 계산
+            const beforePensionBase = Math.min(beforeMonthly, 5900000);
+            const beforePension = beforePensionBase * 0.045;
+            const beforeHealth = beforeMonthly * 0.03545;
+            const beforeLongTermCare = beforeHealth * 0.1281;
+            const beforeEmployment = beforeMonthly * 0.009;
+            const beforeInsurance = beforePension + beforeHealth + beforeLongTermCare + beforeEmployment;
+            const beforeTax = calculateIncomeTax(beforeMonthly, 0);
+            const beforeLocalTax = beforeTax * 0.1;
+            const beforeTakeHome = beforeMonthly - beforeInsurance - beforeTax - beforeLocalTax;
+
+            // 인상 후 실수령 계산
+            const afterPensionBase = Math.min(afterMonthly, 5900000);
+            const afterPension = afterPensionBase * 0.045;
+            const afterHealth = afterMonthly * 0.03545;
+            const afterLongTermCare = afterHealth * 0.1281;
+            const afterEmployment = afterMonthly * 0.009;
+            const afterInsurance = afterPension + afterHealth + afterLongTermCare + afterEmployment;
+            const afterTax = calculateIncomeTax(afterMonthly, 0);
+            const afterLocalTax = afterTax * 0.1;
+            const afterTakeHome = afterMonthly - afterInsurance - afterTax - afterLocalTax;
 
             const monthlyIncrease = afterTakeHome - beforeTakeHome;
             const yearlyIncrease = monthlyIncrease * 12;
@@ -1416,7 +1425,18 @@
 
             for (let i = 0; i <= years; i++) {
                 const year = currentYear + i;
-                const takeHome = (salary / 16) * 0.85; // 간단 계산
+
+                // 정확한 실수령 계산
+                const monthlyGross = salary / 16;
+                const pensionBase = Math.min(monthlyGross, 5900000);
+                const pension = pensionBase * 0.045;
+                const health = monthlyGross * 0.03545;
+                const longTermCare = health * 0.1281;
+                const employment = monthlyGross * 0.009;
+                const insurance = pension + health + longTermCare + employment;
+                const tax = calculateIncomeTax(monthlyGross, 0);
+                const localTax = tax * 0.1;
+                const takeHome = monthlyGross - insurance - tax - localTax;
 
                 const row = `
                     <tr>
