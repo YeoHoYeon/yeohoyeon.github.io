@@ -618,8 +618,8 @@
                         <textarea
                             id="naverWorksData"
                             class="naver-works-input"
-                            placeholder="네이버웍스 '출퇴근 현황' 페이지에서 전체 선택(Ctrl+A) → 복사(Ctrl+C) → 여기에 붙여넣기(Ctrl+V)&#10;&#10;예시:&#10;날짜    출근    퇴근    휴게    결근&#10;2024-10-01    09:00 (PC)    18:30 (PC)    01:00    00:00&#10;2024-10-02    08:50 (PC)    19:15 (PC)    01:00    00:00"
-                            rows="8"
+                            placeholder="네이버웍스 '출퇴근 현황' 페이지에서 전체 선택(Ctrl+A) → 복사(Ctrl+C) → 여기에 붙여넣기(Ctrl+V)&#10;&#10;예시:&#10;10.01 월&#10;09:00(PC)&#10;18:30(PC)&#10;01:00&#10;00:00&#10;10.02 화&#10;08:50(PC)&#10;19:15(PC)&#10;01:00&#10;00:00"
+                            rows="10"
                         ></textarea>
                         <button class="btn-auto-calculate" onclick="autoCalculateOvertime()">
                             📊 야근시간 자동 계산
@@ -1650,40 +1650,73 @@
             return Math.max(0, workHours - 8);
         }
 
-        // 네이버웍스 데이터 파싱
+        // 네이버웍스 데이터 파싱 (세로 형식)
         function parseNaverWorksData(text) {
-            const lines = text.trim().split('\n');
+            const lines = text.trim().split('\n').map(line => line.trim()).filter(line => line);
             const results = [];
 
-            // 첫 줄은 헤더이므로 건너뛰기
-            for (let i = 1; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
+            let i = 0;
+            while (i < lines.length) {
+                const line = lines[i];
 
-                // 탭 또는 여러 공백으로 분리
-                const cols = line.split(/\t+|\s{2,}/);
-                if (cols.length < 4) continue;
+                // 날짜 패턴 찾기: "10.01 수" 형식
+                const dateMatch = line.match(/^(\d{1,2})\.(\d{1,2})/);
 
-                const date = cols[0];
-                const checkIn = cols[1];
-                const checkOut = cols[2];
-                const breakTime = cols[3];
-                const absence = cols[4] || '00:00';
+                if (dateMatch) {
+                    const month = dateMatch[1].padStart(2, '0');
+                    const day = dateMatch[2].padStart(2, '0');
+                    const currentYear = new Date().getFullYear();
+                    const date = `${currentYear}-${month}-${day}`;
 
-                // 날짜 형식 검증 (간단한 체크)
-                if (!date.match(/\d{4}-\d{2}-\d{2}/)) continue;
+                    // 다음 줄들에서 시간 정보 읽기
+                    i++;
+                    let checkIn = null;
+                    let checkOut = null;
+                    let breakTime = null;
+                    let absence = null;
 
-                // 시간 추출 실패하면 건너뛰기
-                if (!extractTime(checkIn) || !extractTime(checkOut)) continue;
+                    // 최대 4개의 시간 데이터 읽기 (출근, 퇴근, 휴게, 결근)
+                    let timeCount = 0;
+                    while (i < lines.length && timeCount < 4) {
+                        const nextLine = lines[i];
 
-                // 야근 시간 계산
-                const overtime = calculateDailyOvertime(checkIn, checkOut, breakTime, absence);
+                        // 다음 날짜가 나오면 중단
+                        if (nextLine.match(/^\d{1,2}\.\d{1,2}/)) {
+                            break;
+                        }
 
-                if (overtime > 0) {
-                    results.push({
-                        date,
-                        overtime: Math.round(overtime * 10) / 10  // 소수점 첫째자리까지
-                    });
+                        // 시간 형식인지 확인
+                        if (nextLine.match(/\d{1,2}:\d{2}/)) {
+                            if (timeCount === 0) checkIn = nextLine;
+                            else if (timeCount === 1) checkOut = nextLine;
+                            else if (timeCount === 2) breakTime = nextLine;
+                            else if (timeCount === 3) absence = nextLine;
+                            timeCount++;
+                            i++;
+                        } else {
+                            // 시간 형식이 아니면 다음 줄로
+                            i++;
+                        }
+                    }
+
+                    // 출근/퇴근 둘 다 있을 때만 계산
+                    if (checkIn && checkOut) {
+                        const overtime = calculateDailyOvertime(
+                            checkIn,
+                            checkOut,
+                            breakTime || '00:00',
+                            absence || '00:00'
+                        );
+
+                        if (overtime > 0) {
+                            results.push({
+                                date,
+                                overtime: Math.round(overtime * 10) / 10
+                            });
+                        }
+                    }
+                } else {
+                    i++;
                 }
             }
 
