@@ -1796,7 +1796,8 @@
                 const totalMinutes = roundedTotal * 60;
                 const roundedToTenMin = Math.floor(totalMinutes / 10) * 10;
                 const finalHours = roundedToTenMin / 60;
-                document.getElementById('overtimeHours').value = finalHours;
+                // 소수점 두 자리까지만 표시
+                document.getElementById('overtimeHours').value = Number(finalHours.toFixed(2));
 
             } catch (error) {
                 console.error('파싱 오류:', error);
