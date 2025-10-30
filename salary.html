@@ -590,7 +590,7 @@
                         <div class="input-group">
                             <label for="overtimeHours">
                                 월 야근 시간 (분)
-                                <span class="info-tooltip" title="구간별 시간당 단가 | 10~15시간: 시간당 1만원 | 15~20시간: 시간당 1.5만원 | 20~25시간: 시간당 2만원 | 25시간 이상: 시간당 2.5만원">?</span>
+                                <span class="info-tooltip" title="구간별 월 고정 금액 | 10시간 미만: 15,000원 | 10~15시간: 17,000원 | 15~20시간: 20,000원 | 20~25시간: 22,500원 | 25시간 이상: 25,000원">?</span>
                             </label>
                             <input type="number" id="overtimeHours" placeholder="예: 1200" value="0" step="10" oninput="updateOvertimeDisplay()">
                             <div id="overtimeDisplay" style="margin-top: 8px; color: #667eea; font-weight: bold; font-size: 1.05em;"></div>
@@ -598,13 +598,14 @@
 
                         <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #ffc107;">
                             <div style="font-size: 0.95em; color: #856404; line-height: 1.8;">
-                                <strong>📌 야근수당 구간별 시간당 단가:</strong><br>
-                                • <strong>10~15시간 미만:</strong> 시간당 10,000원<br>
-                                • <strong>15~20시간 미만:</strong> 시간당 15,000원<br>
-                                • <strong>20~25시간 미만:</strong> 시간당 20,000원<br>
-                                • <strong>25시간 이상:</strong> 시간당 25,000원<br>
+                                <strong>📌 야근수당 구간별 월 고정 금액:</strong><br>
+                                • <strong>10시간 미만:</strong> 월 15,000원<br>
+                                • <strong>10시간 이상 ~ 15시간 미만:</strong> 월 17,000원<br>
+                                • <strong>15시간 이상 ~ 20시간 미만:</strong> 월 20,000원<br>
+                                • <strong>20시간 이상 ~ 25시간 미만:</strong> 월 22,500원<br>
+                                • <strong>25시간 이상:</strong> 월 25,000원<br>
                                 <span style="font-size: 0.85em; color: #666; margin-top: 8px; display: block;">
-                                    * 예: 21시간 야근 = 시간당 2만원 × 21시간 = 42만원
+                                    * 예시: 5시간 야근 → 15,000원 | 12시간 야근 → 17,000원 | 23시간 야근 → 22,500원
                                 </span>
                             </div>
                         </div>
@@ -1246,18 +1247,19 @@
             // 총 수당
             const totalAllowances = positionAllowance + rankAllowance + extraAllowance;
 
-            // 야근 수당 계산 (구간별 시간당 단가 × 시간)
-            let overtimeHourlyRate = 0;
+            // 야근 수당 계산 (구간별 월 고정 금액)
+            let overtimePay = 0;
             if (overtimeHours >= 25) {
-                overtimeHourlyRate = 25000;
+                overtimePay = 25000;
             } else if (overtimeHours >= 20) {
-                overtimeHourlyRate = 20000;
+                overtimePay = 22500;
             } else if (overtimeHours >= 15) {
-                overtimeHourlyRate = 15000;
+                overtimePay = 20000;
             } else if (overtimeHours >= 10) {
-                overtimeHourlyRate = 10000;
+                overtimePay = 17000;
+            } else if (overtimeHours > 0) {
+                overtimePay = 15000;
             }
-            let overtimePay = overtimeHourlyRate * overtimeHours;
 
             const monthlyGross = monthlyBase + totalAllowances + overtimePay;
             const totalMonthlyIncome = monthlyGross + cashBenefit;
