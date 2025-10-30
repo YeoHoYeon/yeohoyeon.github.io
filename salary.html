@@ -381,6 +381,148 @@
         .future-table tr:hover {
             background: #f8f9fa;
         }
+
+        /* 네이버웍스 자동 계산 스타일 */
+        .overtime-method {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: #f9f9f9;
+        }
+
+        .overtime-method.auto-calculate {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8f5e9 100%);
+            border-color: #667eea;
+        }
+
+        .naver-works-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+            margin-bottom: 15px;
+            background: white;
+            transition: border-color 0.3s;
+        }
+
+        .naver-works-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-auto-calculate {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-auto-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+        }
+
+        .btn-auto-calculate:active {
+            transform: translateY(0);
+        }
+
+        .auto-calc-result {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            border-left: 4px solid #4CAF50;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .success-message {
+            color: #2e7d32;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .overtime-summary {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .summary-label {
+            color: #666;
+            font-weight: normal;
+            font-size: 0.85em;
+        }
+
+        .summary-value {
+            color: #667eea;
+            font-size: 1.3em;
+            margin: 0 5px;
+        }
+
+        .overtime-table {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+            border-radius: 8px;
+            background: #fafafa;
+            padding: 10px;
+        }
+
+        .overtime-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+        }
+
+        .overtime-row:hover {
+            background: #f0f0f0;
+        }
+
+        .overtime-row:last-child {
+            border-bottom: none;
+        }
+
+        .overtime-date {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .overtime-hours {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #c62828;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -442,24 +584,60 @@
 
                     <h3>⏰ 야근 정보</h3>
 
-                    <div class="input-group">
-                        <label for="overtimeHours">
-                            월 야근 시간 (시간)
-                            <span class="info-tooltip" title="구간별 시간당 단가 | 10~15시간: 시간당 1만원 | 15~20시간: 시간당 1.5만원 | 20~25시간: 시간당 2만원 | 25시간 이상: 시간당 2.5만원">?</span>
-                        </label>
-                        <input type="number" id="overtimeHours" placeholder="예: 20" value="0">
+                    <!-- 방법 1: 직접 입력 -->
+                    <div class="overtime-method">
+                        <h4 style="color: #667eea; font-size: 1.1em; margin-bottom: 15px;">방법 1: 직접 입력</h4>
+                        <div class="input-group">
+                            <label for="overtimeHours">
+                                월 야근 시간 (시간)
+                                <span class="info-tooltip" title="구간별 시간당 단가 | 10~15시간: 시간당 1만원 | 15~20시간: 시간당 1.5만원 | 20~25시간: 시간당 2만원 | 25시간 이상: 시간당 2.5만원">?</span>
+                            </label>
+                            <input type="number" id="overtimeHours" placeholder="예: 20" value="0">
+                        </div>
+
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #ffc107;">
+                            <div style="font-size: 0.95em; color: #856404; line-height: 1.8;">
+                                <strong>📌 야근수당 구간별 시간당 단가:</strong><br>
+                                • <strong>10~15시간 미만:</strong> 시간당 10,000원<br>
+                                • <strong>15~20시간 미만:</strong> 시간당 15,000원<br>
+                                • <strong>20~25시간 미만:</strong> 시간당 20,000원<br>
+                                • <strong>25시간 이상:</strong> 시간당 25,000원<br>
+                                <span style="font-size: 0.85em; color: #666; margin-top: 8px; display: block;">
+                                    * 예: 21시간 야근 = 시간당 2만원 × 21시간 = 42만원
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
-                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
-                        <div style="font-size: 0.95em; color: #856404; line-height: 1.8;">
-                            <strong>📌 야근수당 구간별 시간당 단가:</strong><br>
-                            • <strong>10~15시간 미만:</strong> 시간당 10,000원<br>
-                            • <strong>15~20시간 미만:</strong> 시간당 15,000원<br>
-                            • <strong>20~25시간 미만:</strong> 시간당 20,000원<br>
-                            • <strong>25시간 이상:</strong> 시간당 25,000원<br>
-                            <span style="font-size: 0.85em; color: #666; margin-top: 8px; display: block;">
-                                * 예: 21시간 야근 = 시간당 2만원 × 21시간 = 42만원
-                            </span>
+                    <!-- 방법 2: 네이버웍스 자동 계산 -->
+                    <div class="overtime-method auto-calculate">
+                        <h4 style="color: #667eea; font-size: 1.1em; margin-bottom: 15px;">방법 2: 네이버웍스 자동 계산 ✨</h4>
+                        <p style="color: #666; font-size: 0.95em; margin-bottom: 10px;">
+                            네이버웍스 '출퇴근 현황'에서 데이터를 복사해서 붙여넣으세요!
+                        </p>
+                        <textarea
+                            id="naverWorksData"
+                            class="naver-works-input"
+                            placeholder="네이버웍스 '출퇴근 현황' 페이지에서 전체 선택(Ctrl+A) → 복사(Ctrl+C) → 여기에 붙여넣기(Ctrl+V)&#10;&#10;예시:&#10;날짜    출근    퇴근    휴게    결근&#10;2024-10-01    09:00 (PC)    18:30 (PC)    01:00    00:00&#10;2024-10-02    08:50 (PC)    19:15 (PC)    01:00    00:00"
+                            rows="8"
+                        ></textarea>
+                        <button class="btn-auto-calculate" onclick="autoCalculateOvertime()">
+                            📊 야근시간 자동 계산
+                        </button>
+
+                        <!-- 결과 표시 영역 -->
+                        <div id="autoCalcResult" class="auto-calc-result" style="display:none;">
+                            <div class="success-message">
+                                <strong>✅ 자동 계산 완료!</strong>
+                            </div>
+                            <div class="overtime-summary">
+                                <span class="summary-label">총 야근시간:</span>
+                                <span class="summary-value" id="totalOvertimeHours">0</span>시간
+                            </div>
+                            <div id="overtimeTable" class="overtime-table"></div>
+                            <p style="font-size: 0.85em; color: #666; margin-top: 10px;">
+                                * 위 결과가 "월 야근 시간" 입력란에 자동으로 입력되었습니다.
+                            </p>
                         </div>
                     </div>
 
@@ -1402,6 +1580,191 @@
             document.getElementById('maxRent').textContent = formatNumber(maxRent) + '원';
 
             document.getElementById('housingResult').style.display = 'block';
+        }
+
+        // 네이버웍스 야근 자동 계산 함수들
+
+        // 시간 추출: "09:00 (PC)" → "09:00"
+        function extractTime(timeStr) {
+            if (!timeStr) return null;
+            const match = timeStr.match(/(\d{1,2}:\d{2})/);
+            return match ? match[1] : null;
+        }
+
+        // 10분 단위 반올림
+        function roundToTenMin(timeStr, direction) {
+            if (!timeStr) return null;
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            let newMinutes = minutes;
+
+            if (direction === 'ceil') {
+                // 올림: 09:03 → 09:10
+                if (minutes % 10 !== 0) {
+                    newMinutes = Math.ceil(minutes / 10) * 10;
+                }
+            } else {
+                // 내림: 18:27 → 18:20
+                newMinutes = Math.floor(minutes / 10) * 10;
+            }
+
+            // 60분 넘으면 시간 조정
+            let newHours = hours;
+            if (newMinutes >= 60) {
+                newHours++;
+                newMinutes = 0;
+            }
+
+            return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+        }
+
+        // 시간을 분으로 변환
+        function timeToMinutes(timeStr) {
+            if (!timeStr || timeStr === '00:00') return 0;
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return hours * 60 + minutes;
+        }
+
+        // 일일 야근 계산
+        function calculateDailyOvertime(checkIn, checkOut, breakTime, absence) {
+            // 1. 괄호 앞 시간만 추출
+            const startTime = extractTime(checkIn);
+            const endTime = extractTime(checkOut);
+
+            if (!startTime || !endTime) return 0;
+
+            // 2. 10분 단위 반올림
+            const roundedStart = roundToTenMin(startTime, 'ceil');   // 09:03 → 09:10
+            const roundedEnd = roundToTenMin(endTime, 'floor');      // 18:27 → 18:20
+
+            // 3. 시간을 분 단위로 변환
+            const startMinutes = timeToMinutes(roundedStart);
+            const endMinutes = timeToMinutes(roundedEnd);
+            const breakMinutes = timeToMinutes(breakTime || '00:00');
+            const absenceMinutes = timeToMinutes(absence || '00:00');
+
+            // 4. 정상 근무시간 계산
+            const workMinutes = endMinutes - startMinutes - breakMinutes + absenceMinutes;
+            const workHours = workMinutes / 60;
+
+            // 5. 야근시간 계산 (8시간 초과분)
+            return Math.max(0, workHours - 8);
+        }
+
+        // 네이버웍스 데이터 파싱
+        function parseNaverWorksData(text) {
+            const lines = text.trim().split('\n');
+            const results = [];
+
+            // 첫 줄은 헤더이므로 건너뛰기
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                // 탭 또는 여러 공백으로 분리
+                const cols = line.split(/\t+|\s{2,}/);
+                if (cols.length < 4) continue;
+
+                const date = cols[0];
+                const checkIn = cols[1];
+                const checkOut = cols[2];
+                const breakTime = cols[3];
+                const absence = cols[4] || '00:00';
+
+                // 날짜 형식 검증 (간단한 체크)
+                if (!date.match(/\d{4}-\d{2}-\d{2}/)) continue;
+
+                // 시간 추출 실패하면 건너뛰기
+                if (!extractTime(checkIn) || !extractTime(checkOut)) continue;
+
+                // 야근 시간 계산
+                const overtime = calculateDailyOvertime(checkIn, checkOut, breakTime, absence);
+
+                if (overtime > 0) {
+                    results.push({
+                        date,
+                        overtime: Math.round(overtime * 10) / 10  // 소수점 첫째자리까지
+                    });
+                }
+            }
+
+            return results;
+        }
+
+        // 자동 계산 메인 함수
+        function autoCalculateOvertime() {
+            const textarea = document.getElementById('naverWorksData');
+            const text = textarea.value.trim();
+            const resultDiv = document.getElementById('autoCalcResult');
+            const tableDiv = document.getElementById('overtimeTable');
+
+            // 입력 검증
+            if (!text) {
+                alert('❌ 네이버웍스 출퇴근 데이터를 붙여넣어주세요!');
+                textarea.focus();
+                return;
+            }
+
+            try {
+                // 데이터 파싱
+                const overtimeData = parseNaverWorksData(text);
+
+                if (overtimeData.length === 0) {
+                    // 에러 메시지 표시
+                    tableDiv.innerHTML = `
+                        <div class="error-message">
+                            <strong>❌ 올바른 네이버웍스 데이터 형식이 아닙니다.</strong><br>
+                            <p style="margin-top: 10px; font-size: 0.9em;">
+                                네이버웍스 '출퇴근 현황' 페이지에서:<br>
+                                1. 전체 선택 (Ctrl+A)<br>
+                                2. 복사 (Ctrl+C)<br>
+                                3. 여기에 붙여넣기 (Ctrl+V)
+                            </p>
+                        </div>
+                    `;
+                    resultDiv.style.display = 'block';
+                    return;
+                }
+
+                // 총 야근시간 계산
+                const totalHours = overtimeData.reduce((sum, item) => sum + item.overtime, 0);
+                const roundedTotal = Math.round(totalHours * 10) / 10;
+
+                // 결과 테이블 생성
+                let tableHTML = '';
+                overtimeData.forEach(item => {
+                    tableHTML += `
+                        <div class="overtime-row">
+                            <span class="overtime-date">${item.date}</span>
+                            <span class="overtime-hours">${item.overtime.toFixed(1)}시간</span>
+                        </div>
+                    `;
+                });
+
+                // 결과 표시
+                document.getElementById('totalOvertimeHours').textContent = roundedTotal.toFixed(1);
+                tableDiv.innerHTML = tableHTML;
+                resultDiv.style.display = 'block';
+
+                // 자동으로 입력란에 값 입력
+                document.getElementById('overtimeHours').value = Math.round(roundedTotal);
+
+                // 성공 메시지
+                setTimeout(() => {
+                    alert(`✅ 총 ${overtimeData.length}일의 야근 데이터가 분석되었습니다!\n총 야근시간: ${roundedTotal.toFixed(1)}시간`);
+                }, 100);
+
+            } catch (error) {
+                console.error('파싱 오류:', error);
+                tableDiv.innerHTML = `
+                    <div class="error-message">
+                        <strong>❌ 데이터 처리 중 오류가 발생했습니다.</strong><br>
+                        <p style="margin-top: 10px; font-size: 0.9em;">
+                            ${error.message}
+                        </p>
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+            }
         }
 
         // 엔터키 이벤트
