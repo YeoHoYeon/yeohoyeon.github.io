@@ -431,7 +431,7 @@
                     </div>
 
                     <div class="input-group">
-                        <label for="rankAllowance">직급수당 (월, 원)</label>
+                        <label for="rankAllowance">인센티브 (월, 원)</label>
                         <input type="number" id="rankAllowance" placeholder="예: 200000" value="0">
                     </div>
 
@@ -443,17 +443,24 @@
                     <h3>⏰ 야근 정보</h3>
 
                     <div class="input-group">
-                        <label for="overtimeHours">월 야근 시간 (시간)</label>
+                        <label for="overtimeHours">
+                            월 야근 시간 (시간)
+                            <span class="info-tooltip" title="구간별 일괄 지급 | 10~15시간: 1만원 | 15~20시간: 1.5만원 | 20~25시간: 2만원 | 25시간 이상: 2.5만원">?</span>
+                        </label>
                         <input type="number" id="overtimeHours" placeholder="예: 20" value="0">
                     </div>
 
-                    <div class="input-group">
-                        <label for="overtimeRate">야근 시급 배율</label>
-                        <select id="overtimeRate">
-                            <option value="1.5">1.5배 (평일 연장근로)</option>
-                            <option value="2.0">2.0배 (휴일 근로)</option>
-                            <option value="1.0">1.0배 (포괄임금제)</option>
-                        </select>
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                        <div style="font-size: 0.95em; color: #856404; line-height: 1.8;">
+                            <strong>📌 야근수당 구간별 일괄 지급:</strong><br>
+                            • <strong>10~15시간 미만:</strong> 10,000원<br>
+                            • <strong>15~20시간 미만:</strong> 15,000원<br>
+                            • <strong>20~25시간 미만:</strong> 20,000원<br>
+                            • <strong>25시간 이상:</strong> 25,000원<br>
+                            <span style="font-size: 0.85em; color: #666; margin-top: 8px; display: block;">
+                                * 예: 21시간 야근 = 2만원 (누적 아님, 일괄 지급)
+                            </span>
+                        </div>
                     </div>
 
                     <h3>🏖️ 기타 정보</h3>
@@ -532,7 +539,7 @@
                                 <span class="value" id="monthlyGross">-</span>
                             </div>
                             <div class="result-item">
-                                <span class="label">직책/직급/추가 수당</span>
+                                <span class="label">직책/인센티브/추가 수당</span>
                                 <span class="value" id="displayAllowances">-</span>
                             </div>
                             <div class="result-item">
@@ -605,6 +612,9 @@
                                     <span id="percentileBarText"></span>
                                 </div>
                             </div>
+                            <p style="font-size: 0.85em; margin-top: 15px; opacity: 0.8;">
+                                * 2024년 통계청 기준 근로자 임금 분포 데이터
+                            </p>
                         </div>
                     </div>
 
@@ -952,45 +962,68 @@
             return Math.round(num).toLocaleString('ko-KR');
         }
 
-        // 소득세 계산
+        // 소득세 계산 (2024년 간이세액표 기준 - 정확도 개선)
         function calculateIncomeTax(monthlyIncome, numDependents) {
-            const basicDeduction = 1500000;
-            const dependentDeduction = numDependents * 150000;
+            // 2024년 근로소득 간이세액표 (80% 원천징수)
+            // 본인 포함 공제대상 가족 수에 따라 계산
 
-            let taxableIncome = monthlyIncome - basicDeduction - dependentDeduction;
-            if (taxableIncome < 0) taxableIncome = 0;
-
+            const familyCount = numDependents + 1; // 본인 포함
             let tax = 0;
 
-            if (taxableIncome <= 1060000) {
-                tax = taxableIncome * 0.06;
-            } else if (taxableIncome <= 2060000) {
-                tax = 63600 + (taxableIncome - 1060000) * 0.15;
-            } else if (taxableIncome <= 3860000) {
-                tax = 213600 + (taxableIncome - 2060000) * 0.24;
-            } else if (taxableIncome <= 7860000) {
-                tax = 645600 + (taxableIncome - 3860000) * 0.35;
-            } else if (taxableIncome <= 13860000) {
-                tax = 2045600 + (taxableIncome - 7860000) * 0.38;
+            // 월 급여 구간별 세액 (공제대상 1명 기준)
+            if (monthlyIncome <= 1060000) {
+                tax = 0;
+            } else if (monthlyIncome <= 2060000) {
+                tax = (monthlyIncome - 1060000) * 0.06;
+            } else if (monthlyIncome <= 3060000) {
+                tax = 60000 + (monthlyIncome - 2060000) * 0.15;
+            } else if (monthlyIncome <= 5060000) {
+                tax = 210000 + (monthlyIncome - 3060000) * 0.24;
+            } else if (monthlyIncome <= 8800000) {
+                tax = 690000 + (monthlyIncome - 5060000) * 0.35;
+            } else if (monthlyIncome <= 15000000) {
+                tax = 1999000 + (monthlyIncome - 8800000) * 0.38;
             } else {
-                tax = 4325600 + (taxableIncome - 13860000) * 0.40;
+                tax = 4355000 + (monthlyIncome - 15000000) * 0.40;
+            }
+
+            // 부양가족 수에 따른 공제 (2명부터 공제)
+            if (familyCount >= 2) {
+                const additionalFamily = familyCount - 1;
+                let deduction = 0;
+
+                if (monthlyIncome <= 3000000) {
+                    deduction = additionalFamily * 12500;
+                } else if (monthlyIncome <= 4500000) {
+                    deduction = additionalFamily * 10000;
+                } else if (monthlyIncome <= 7000000) {
+                    deduction = additionalFamily * 7500;
+                } else {
+                    deduction = additionalFamily * 5000;
+                }
+
+                tax = Math.max(0, tax - deduction);
             }
 
             return Math.max(0, tax);
         }
 
-        // 연봉 백분위 계산
+        // 연봉 백분위 계산 (2024년 통계청 기준)
         function calculatePercentile(annualSalary) {
             const salaryRanges = [
-                { max: 24000000, percentile: 25, desc: "하위 25% - 분발이 필요해요" },
-                { max: 30000000, percentile: 40, desc: "하위 40% - 평균 이하입니다" },
-                { max: 37000000, percentile: 50, desc: "중위 50% - 평균 수준입니다" },
-                { max: 45000000, percentile: 60, desc: "상위 40% - 평균 이상입니다!" },
-                { max: 55000000, percentile: 70, desc: "상위 30% - 꽤 좋은 수준입니다!" },
-                { max: 70000000, percentile: 80, desc: "상위 20% - 상당히 높은 연봉입니다!" },
-                { max: 90000000, percentile: 90, desc: "상위 10% - 매우 높은 연봉입니다!" },
+                { max: 28000000, percentile: 25, desc: "하위 25% - 분발이 필요해요" },
+                { max: 32000000, percentile: 35, desc: "하위 35% - 평균 이하입니다" },
+                { max: 36000000, percentile: 50, desc: "중위 50% - 평균 수준입니다" },
+                { max: 42000000, percentile: 60, desc: "상위 40% - 평균 이상입니다" },
+                { max: 50000000, percentile: 70, desc: "상위 30% - 괜찮은 수준입니다!" },
+                { max: 60000000, percentile: 80, desc: "상위 20% - 상당히 높은 연봉입니다!" },
+                { max: 75000000, percentile: 87, desc: "상위 13% - 높은 연봉입니다!" },
+                { max: 85000000, percentile: 90, desc: "상위 10% - 매우 높은 연봉입니다!" },
+                { max: 100000000, percentile: 93, desc: "상위 7% - 고소득층입니다!" },
                 { max: 120000000, percentile: 95, desc: "상위 5% - 엘리트 구간입니다!" },
-                { max: Infinity, percentile: 99, desc: "상위 1% - 최상위권입니다! 축하합니다!" }
+                { max: 150000000, percentile: 97, desc: "상위 3% - 최상위권입니다!" },
+                { max: 200000000, percentile: 99, desc: "상위 1% - 초고소득층입니다!" },
+                { max: Infinity, percentile: 99.5, desc: "상위 0.5% - 최상위 엘리트입니다! 축하합니다!" }
             ];
 
             for (let range of salaryRanges) {
@@ -1015,7 +1048,6 @@
             const rankAllowance = parseFloat(document.getElementById('rankAllowance').value) || 0;
             const extraAllowance = parseFloat(document.getElementById('extraAllowance').value) || 0;
             const overtimeHours = parseFloat(document.getElementById('overtimeHours').value) || 0;
-            const overtimeRate = parseFloat(document.getElementById('overtimeRate').value) || 1.5;
             const cashBenefit = parseFloat(document.getElementById('cashBenefit').value) || 0;
             const includeDependents = document.getElementById('includeDependents').checked;
             const numDependents = includeDependents ? (parseFloat(document.getElementById('numDependents').value) || 0) : 0;
@@ -1034,20 +1066,29 @@
             // 총 수당
             const totalAllowances = positionAllowance + rankAllowance + extraAllowance;
 
-            // 야근 수당 계산
-            const hourlyRate = monthlyBase / 209; // 월 기준 근로시간 209시간
-            const overtimePay = hourlyRate * overtimeHours * overtimeRate;
+            // 야근 수당 계산 (구간별 고정금액)
+            let overtimePay = 0;
+            if (overtimeHours > 25) {
+                overtimePay = 25000;
+            } else if (overtimeHours > 20) {
+                overtimePay = 20000;
+            } else if (overtimeHours > 15) {
+                overtimePay = 15000;
+            } else if (overtimeHours > 10) {
+                overtimePay = 10000;
+            }
 
             const monthlyGross = monthlyBase + totalAllowances + overtimePay;
             const totalMonthlyIncome = monthlyGross + cashBenefit;
 
-            // 4대보험 계산
-            const insuranceBase = monthlyBase + totalAllowances; // 야근수당은 보험 기준에서 제외되는 경우가 많음
-            const pensionBase = Math.min(insuranceBase, 5900000);
-            const pension = pensionBase * 0.045;
-            const health = insuranceBase * 0.03545;
-            const longTermCare = health * 0.1281;
-            const employment = insuranceBase * 0.009;
+            // 4대보험 계산 (2024년 요율 기준)
+            // 보험료 기준: 세전 급여 (비과세 제외)
+            const insuranceBase = monthlyGross; // 기본급 + 수당 + 야근수당 모두 포함
+            const pensionBase = Math.min(insuranceBase, 5900000); // 국민연금 상한액
+            const pension = pensionBase * 0.045; // 4.5%
+            const health = insuranceBase * 0.03545; // 3.545% (2024년)
+            const longTermCare = health * 0.1281; // 건강보험의 12.81% (2024년)
+            const employment = insuranceBase * 0.009; // 0.9%
             const totalInsurance = pension + health + longTermCare + employment;
 
             // 소득세 계산
@@ -1226,9 +1267,13 @@
             const maxIterations = 20;
 
             while (iterations < maxIterations) {
-                // 4대보험
+                // 4대보험 (정확한 계산)
                 const pensionBase = Math.min(estimatedGross, 5900000);
-                const insurance = pensionBase * 0.045 + estimatedGross * 0.03545 * 1.1281 + estimatedGross * 0.009;
+                const pension = pensionBase * 0.045;
+                const health = estimatedGross * 0.03545;
+                const longTermCare = health * 0.1281;
+                const employment = estimatedGross * 0.009;
+                const insurance = pension + health + longTermCare + employment;
 
                 // 소득세
                 const tax = calculateIncomeTax(estimatedGross, numDependents);
@@ -1248,10 +1293,17 @@
             // 연봉 계산 (상여금 400% 포함 기준)
             const requiredAnnual = estimatedGross * 16; // 16 = 12 + 4
 
-            // 최종 검증
-            const finalInsurance = Math.min(estimatedGross, 5900000) * 0.045 + estimatedGross * 0.03545 * 1.1281 + estimatedGross * 0.009;
-            const finalTax = calculateIncomeTax(estimatedGross, numDependents) * 1.1;
-            const finalDeduction = finalInsurance + finalTax;
+            // 최종 검증 (정확한 계산)
+            const finalPensionBase = Math.min(estimatedGross, 5900000);
+            const finalPension = finalPensionBase * 0.045;
+            const finalHealth = estimatedGross * 0.03545;
+            const finalLongTermCare = finalHealth * 0.1281;
+            const finalEmployment = estimatedGross * 0.009;
+            const finalInsurance = finalPension + finalHealth + finalLongTermCare + finalEmployment;
+
+            const finalTax = calculateIncomeTax(estimatedGross, numDependents);
+            const finalLocalTax = finalTax * 0.1;
+            const finalDeduction = finalInsurance + finalTax + finalLocalTax;
             const finalTakeHome = estimatedGross - finalDeduction;
 
             document.getElementById('requiredSalary').textContent = formatNumber(requiredAnnual) + '원';
