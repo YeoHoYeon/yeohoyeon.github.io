@@ -431,7 +431,7 @@
                     </div>
 
                     <div class="input-group">
-                        <label for="rankAllowance">직급수당 (월, 원)</label>
+                        <label for="rankAllowance">인센티브 (월, 원)</label>
                         <input type="number" id="rankAllowance" placeholder="예: 200000" value="0">
                     </div>
 
@@ -443,17 +443,21 @@
                     <h3>⏰ 야근 정보</h3>
 
                     <div class="input-group">
-                        <label for="overtimeHours">월 야근 시간 (시간)</label>
+                        <label for="overtimeHours">
+                            월 야근 시간 (시간)
+                            <span class="info-tooltip" title="10시간 초과: 1만원 | 15시간 초과: 1.5만원 | 20시간 초과: 2만원 | 25시간 초과: 2.5만원">?</span>
+                        </label>
                         <input type="number" id="overtimeHours" placeholder="예: 20" value="0">
                     </div>
 
-                    <div class="input-group">
-                        <label for="overtimeRate">야근 시급 배율</label>
-                        <select id="overtimeRate">
-                            <option value="1.5">1.5배 (평일 연장근로)</option>
-                            <option value="2.0">2.0배 (휴일 근로)</option>
-                            <option value="1.0">1.0배 (포괄임금제)</option>
-                        </select>
+                    <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #667eea;">
+                        <div style="font-size: 0.95em; color: #555; line-height: 1.6;">
+                            <strong>📌 야근수당 지급 기준:</strong><br>
+                            • 10시간 초과: 10,000원<br>
+                            • 15시간 초과: 15,000원<br>
+                            • 20시간 초과: 20,000원<br>
+                            • 25시간 초과: 25,000원
+                        </div>
                     </div>
 
                     <h3>🏖️ 기타 정보</h3>
@@ -532,7 +536,7 @@
                                 <span class="value" id="monthlyGross">-</span>
                             </div>
                             <div class="result-item">
-                                <span class="label">직책/직급/추가 수당</span>
+                                <span class="label">직책/인센티브/추가 수당</span>
                                 <span class="value" id="displayAllowances">-</span>
                             </div>
                             <div class="result-item">
@@ -1041,7 +1045,6 @@
             const rankAllowance = parseFloat(document.getElementById('rankAllowance').value) || 0;
             const extraAllowance = parseFloat(document.getElementById('extraAllowance').value) || 0;
             const overtimeHours = parseFloat(document.getElementById('overtimeHours').value) || 0;
-            const overtimeRate = parseFloat(document.getElementById('overtimeRate').value) || 1.5;
             const cashBenefit = parseFloat(document.getElementById('cashBenefit').value) || 0;
             const includeDependents = document.getElementById('includeDependents').checked;
             const numDependents = includeDependents ? (parseFloat(document.getElementById('numDependents').value) || 0) : 0;
@@ -1060,9 +1063,17 @@
             // 총 수당
             const totalAllowances = positionAllowance + rankAllowance + extraAllowance;
 
-            // 야근 수당 계산
-            const hourlyRate = monthlyBase / 209; // 월 기준 근로시간 209시간
-            const overtimePay = hourlyRate * overtimeHours * overtimeRate;
+            // 야근 수당 계산 (구간별 고정금액)
+            let overtimePay = 0;
+            if (overtimeHours > 25) {
+                overtimePay = 25000;
+            } else if (overtimeHours > 20) {
+                overtimePay = 20000;
+            } else if (overtimeHours > 15) {
+                overtimePay = 15000;
+            } else if (overtimeHours > 10) {
+                overtimePay = 10000;
+            }
 
             const monthlyGross = monthlyBase + totalAllowances + overtimePay;
             const totalMonthlyIncome = monthlyGross + cashBenefit;
