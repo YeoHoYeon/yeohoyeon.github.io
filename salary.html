@@ -1781,11 +1781,6 @@
                 // 자동으로 입력란에 값 입력
                 document.getElementById('overtimeHours').value = Math.round(roundedTotal);
 
-                // 성공 메시지
-                setTimeout(() => {
-                    alert(`✅ 총 ${overtimeData.length}일의 야근 데이터가 분석되었습니다!\n총 야근시간: ${roundedTotal.toFixed(1)}시간`);
-                }, 100);
-
             } catch (error) {
                 console.error('파싱 오류:', error);
                 tableDiv.innerHTML = `
