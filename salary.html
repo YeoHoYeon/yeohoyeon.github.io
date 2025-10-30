@@ -1792,8 +1792,11 @@
                 tableDiv.innerHTML = tableHTML;
                 resultDiv.style.display = 'block';
 
-                // 자동으로 입력란에 값 입력
-                document.getElementById('overtimeHours').value = Math.round(roundedTotal);
+                // 자동으로 입력란에 값 입력 (10분 단위로 내림)
+                const totalMinutes = roundedTotal * 60;
+                const roundedToTenMin = Math.floor(totalMinutes / 10) * 10;
+                const finalHours = roundedToTenMin / 60;
+                document.getElementById('overtimeHours').value = finalHours;
 
             } catch (error) {
                 console.error('파싱 오류:', error);
