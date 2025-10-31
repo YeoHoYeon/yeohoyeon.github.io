@@ -780,18 +780,32 @@
                             </div>
                         </div>
 
-                        <!-- 연봉 백분위 -->
+                        <!-- 연령대별 중위소득 비교 -->
                         <div class="percentile-box">
-                            <h3>🎯 당신의 연봉 순위</h3>
-                            <div class="percentile" id="percentileRank">상위 -%</div>
-                            <div class="description" id="percentileDesc">-</div>
-                            <div class="percentile-bar">
-                                <div class="percentile-fill" id="percentileFill" style="width: 0%;">
-                                    <span id="percentileBarText"></span>
+                            <h3>📊 연령대별 중위 연봉 (2024년 기준)</h3>
+                            <div style="text-align: left; margin-top: 20px;">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px;">
+                                    <div style="padding: 15px; background: white; border-radius: 10px;">
+                                        <div style="color: #666; font-size: 0.9em; margin-bottom: 5px;">20대 중위소득</div>
+                                        <div style="font-size: 1.5em; font-weight: bold; color: #667eea;">3,200만원</div>
+                                    </div>
+                                    <div style="padding: 15px; background: white; border-radius: 10px;">
+                                        <div style="color: #666; font-size: 0.9em; margin-bottom: 5px;">30대 중위소득</div>
+                                        <div style="font-size: 1.5em; font-weight: bold; color: #667eea;">4,500만원</div>
+                                    </div>
+                                    <div style="padding: 15px; background: white; border-radius: 10px;">
+                                        <div style="color: #666; font-size: 0.9em; margin-bottom: 5px;">40대 중위소득</div>
+                                        <div style="font-size: 1.5em; font-weight: bold; color: #667eea;">5,200만원</div>
+                                    </div>
+                                    <div style="padding: 15px; background: white; border-radius: 10px;">
+                                        <div style="color: #666; font-size: 0.9em; margin-bottom: 5px;">50대 중위소득</div>
+                                        <div style="font-size: 1.5em; font-weight: bold; color: #667eea;">5,800만원</div>
+                                    </div>
                                 </div>
                             </div>
                             <p style="font-size: 0.85em; margin-top: 15px; opacity: 0.8;">
-                                * 2024년 통계청 기준 근로자 임금 분포 데이터
+                                * 2024년 통계청 근로소득 중위값 기준<br>
+                                * 본인 연령대 중위소득과 비교해보세요
                             </p>
                         </div>
                     </div>
@@ -1315,16 +1329,6 @@
 
             document.getElementById('yearlyGross').textContent = formatNumber(yearlyGross) + '원';
             document.getElementById('yearlyNet').textContent = formatNumber(yearlyNet) + '원';
-
-            // 백분위 계산 (상여금 포함한 총 연봉)
-            const percentileData = calculatePercentile(totalAnnual);
-            document.getElementById('percentileRank').textContent = `상위 ${percentileData.topPercent}%`;
-            document.getElementById('percentileDesc').textContent = percentileData.desc;
-
-            setTimeout(() => {
-                document.getElementById('percentileFill').style.width = percentileData.percentile + '%';
-                document.getElementById('percentileBarText').textContent = percentileData.percentile + '%';
-            }, 100);
 
             // 결과 섹션 표시
             document.getElementById('noResultSection').style.display = 'none';
